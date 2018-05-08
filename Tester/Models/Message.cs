@@ -6,7 +6,7 @@ using RestSharp.Authenticators;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Texter.Models
+namespace Tester.Models
 {
     public class Message
     {
@@ -37,6 +37,18 @@ namespace Texter.Models
             {
                 response = await GetResponseContentAsync(client, request) as RestResponse;
             }).Wait();
+            JObject jsonResponse = JsonConvert.DeserializeObject<JObject>(response.Content);
+            var messageList = JsonConvert.DeserializeObject<List<Message>>(jsonResponse["messages"].ToString());
+            return messageList;
+        }
+
+        public static Task<IRestResponse> GetResponseContentAsync(RestClient theClient, RestRequest theRequest)
+        {
+            var tcs = new TaskCompletionSource<IRestResponse>();
+            theClient.ExecuteAsync(theRequest, response => {
+                tcs.SetResult(response);
+            });
+            return tcs.Task;
         }
     }
 }
